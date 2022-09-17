@@ -205,9 +205,8 @@ async fn bedrock(
     hostname: &str,
     port: Option<u16>,
 ) -> Result<Json<BedrockRet>, ()> {
-
     // eprintln!("req: {hostname}:{port:?}");
-    
+
     let addr = resolver
         .lookup_ip(hostname)
         .await
@@ -258,7 +257,7 @@ fn rocket() -> _ {
     //         tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
     //     }
     // });
-   let resolver = TokioAsyncResolver::tokio_from_system_conf().unwrap_or_else(|_| {
+    let resolver = TokioAsyncResolver::tokio_from_system_conf().unwrap_or_else(|_| {
         TokioAsyncResolver::new(
             ResolverConfig::default(),
             ResolverOpts::default(),
@@ -270,7 +269,7 @@ fn rocket() -> _ {
     rocket::build()
         .manage(resolver)
         .mount("/", routes![java, bedrock])
-	.attach(CORS)
+        .attach(CORS)
 }
 
 #[allow(clippy::needless_lifetimes)]
