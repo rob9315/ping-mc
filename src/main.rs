@@ -2,17 +2,6 @@
 use std::sync::atomic::AtomicUsize;
 use std::{net::ToSocketAddrs, str::FromStr, time::Duration};
 use rocket_cors::{{AllowedOrigins, CorsOptions};
-    
-let cors = CorsOptions::default()
-    .allowed_origins(AllowedOrigins::all())
-    .allowed_methods(
-        vec![Method::Get]
-            .into_iter()
-            .map(From::from)
-            .collect(),
-        )
-        .allow_credentials(false)
-        .to_cors();
 
 use miners::{
     encoding::decode,
@@ -245,6 +234,17 @@ fn rocket() -> _ {
     //         tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
     //     }
     // });
+    let cors = CorsOptions::default()
+        .allowed_origins(AllowedOrigins::all())
+        .allowed_methods(
+            vec![Method::Get]
+                .into_iter()
+                .map(From::from)
+                .collect(),
+            )
+        .allow_credentials(false)
+        .to_cors();
+
     let resolver = TokioAsyncResolver::tokio_from_system_conf().unwrap_or_else(|_| {
         TokioAsyncResolver::new(
             ResolverConfig::default(),
