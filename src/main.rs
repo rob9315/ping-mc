@@ -1,6 +1,18 @@
 #[allow(unused)]
 use std::sync::atomic::AtomicUsize;
 use std::{net::ToSocketAddrs, str::FromStr, time::Duration};
+use rocket_cors::{{AllowedOrigins, CorsOptions};
+    
+let cors = CorsOptions::default()
+    .allowed_origins(AllowedOrigins::all())
+    .allowed_methods(
+        vec![Method::Get]
+            .into_iter()
+            .map(From::from)
+            .collect(),
+        )
+        .allow_credentials(false)
+        .to_cors();
 
 use miners::{
     encoding::decode,
@@ -242,6 +254,7 @@ fn rocket() -> _ {
         .expect("couldn't construct dns resolver")
     });
     rocket::build()
+        .attach(cors.unwrap())
         .manage(resolver)
         .mount("/", routes![java, bedrock])
 }
