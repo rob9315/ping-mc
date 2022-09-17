@@ -18,6 +18,31 @@ use trust_dns_resolver::{
     TokioAsyncResolver, TokioHandle,
 };
 
+pub struct CORS;
+use rocket::fairing::{Fairing, Info, Kind};
+use rocket::http::Header;
+use rocket::{Request, Response};
+
+#[rocket::async_trait]
+impl Fairing for CORS {
+    fn info(&self) -> Info {
+        Info {
+            name: "Add CORS headers to responses",
+            kind: Kind::Response,
+        }
+    }
+
+    async fn on_response<'r>(&self, _request: &'r Request<'_>, response: &mut Response<'r>) {
+        response.set_header(Header::new("Access-Control-Allow-Origin", "*"));
+        response.set_header(Header::new(
+            "Access-Control-Allow-Methods",
+            "POST, GET, PATCH, OPTIONS",
+        ));
+        response.set_header(Header::new("Access-Control-Allow-Headers", "*"));
+        response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
+    }
+}
+
 #[macro_use]
 extern crate rocket;
 
@@ -180,9 +205,8 @@ async fn bedrock(
     hostname: &str,
     port: Option<u16>,
 ) -> Result<Json<BedrockRet>, ()> {
-
     // eprintln!("req: {hostname}:{port:?}");
-    
+
     let addr = resolver
         .lookup_ip(hostname)
         .await
@@ -241,9 +265,11 @@ fn rocket() -> _ {
         )
         .expect("couldn't construct dns resolver")
     });
+
     rocket::build()
         .manage(resolver)
         .mount("/", routes![java, bedrock])
+        .attach(CORS)
 }
 
 #[allow(clippy::needless_lifetimes)]
