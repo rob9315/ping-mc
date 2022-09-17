@@ -1,7 +1,7 @@
 #[allow(unused)]
 use std::sync::atomic::AtomicUsize;
 use std::{net::ToSocketAddrs, str::FromStr, time::Duration};
-use rocket_cors::{{AllowedOrigins, CorsOptions};
+use rocket_cors::{AllowedOrigins, CorsOptions};
 
 use miners::{
     encoding::decode,
