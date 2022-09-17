@@ -1,0 +1,15 @@
+[package]
+name = "ping-mc"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+miners = { git = "https://github.com/mine-rs/mine-rs", version = "0.0.0-beta.0", rev = "c192d8c749f0a053dcf407c901591232260b0500" }
+rocket = { version = "0.5.0-rc.2", features = ["json"] }
+rust-raknet = "0.11.0"
+serde = { version = "1.0.144", features = ["derive"] }
+tokio = { version = "1.21.1", features = ["full"] }
+tokio-util = { version = "0.7.4", features = ["compat"] }
+trust-dns-resolver = "0.22.0"
