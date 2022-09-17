@@ -1,7 +1,6 @@
 #[allow(unused)]
 use std::sync::atomic::AtomicUsize;
 use std::{net::ToSocketAddrs, str::FromStr, time::Duration};
-use rocket_cors::{AllowedOrigins, CorsOptions};
 
 use miners::{
     encoding::decode,
@@ -18,6 +17,31 @@ use trust_dns_resolver::{
     config::{ResolverConfig, ResolverOpts},
     TokioAsyncResolver, TokioHandle,
 };
+
+pub struct CORS;
+use rocket::fairing::{Fairing, Info, Kind};
+use rocket::http::Header;
+use rocket::{Request, Response};
+
+#[rocket::async_trait]
+impl Fairing for CORS {
+    fn info(&self) -> Info {
+        Info {
+            name: "Add CORS headers to responses",
+            kind: Kind::Response,
+        }
+    }
+
+    async fn on_response<'r>(&self, _request: &'r Request<'_>, response: &mut Response<'r>) {
+        response.set_header(Header::new("Access-Control-Allow-Origin", "*"));
+        response.set_header(Header::new(
+            "Access-Control-Allow-Methods",
+            "POST, GET, PATCH, OPTIONS",
+        ));
+        response.set_header(Header::new("Access-Control-Allow-Headers", "*"));
+        response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
+    }
+}
 
 #[macro_use]
 extern crate rocket;
@@ -234,18 +258,7 @@ fn rocket() -> _ {
     //         tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
     //     }
     // });
-    let cors = CorsOptions::default()
-        .allowed_origins(AllowedOrigins::all())
-        .allowed_methods(
-            vec![Method::Get]
-                .into_iter()
-                .map(From::from)
-                .collect(),
-            )
-        .allow_credentials(false)
-        .to_cors();
-
-    let resolver = TokioAsyncResolver::tokio_from_system_conf().unwrap_or_else(|_| {
+   let resolver = TokioAsyncResolver::tokio_from_system_conf().unwrap_or_else(|_| {
         TokioAsyncResolver::new(
             ResolverConfig::default(),
             ResolverOpts::default(),
@@ -253,10 +266,11 @@ fn rocket() -> _ {
         )
         .expect("couldn't construct dns resolver")
     });
+
     rocket::build()
-        .attach(cors.unwrap())
         .manage(resolver)
         .mount("/", routes![java, bedrock])
+	.attach(CORS)
 }
 
 #[allow(clippy::needless_lifetimes)]
